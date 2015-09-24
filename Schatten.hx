@@ -50,6 +50,82 @@ class Schatten extends Entity
 		welchesverhalten();
 		nonMoveCollision();
 	}
+
+	private function moveCollideMori(e:Entity):Bool {
+		var collided = false;
+
+		if (G.sitzt && !mori.genuggehoert) { 
+			collided = true;
+		}
+		else if (G.sitzt && mori.genuggehoert) { 
+			verhalten(2);
+
+			collided = true;
+		}
+		else if (mori.steht) { 		//damit knockback auch getriggert wird obwohl moveCollide in der mori class nicht getriggert wurde 
+			mori.anne = HXP.angle(e.x, e.y, this.x, this.y);
+			mori.anne = mori.anne * Math.PI / 180;
+			
+			if (mori.name != "lysop" && mori.ren != 1) {	
+				mori.knock = 60;				
+			}
+			
+			verhalten(2);
+
+			collided = true;
+		}
+		else { 
+			verhalten(2); 
+
+			collided = true;
+		}
+
+		return collided;
+	}
+
+	private function moveCollideFaust(e:Entity):Bool {
+		var moriwi:Float = HXP.angle(this.x, this.y, mori.x, mori.y);
+		var faust:Faust = cast(HXP.scene.nearestToEntity("faust", this), Faust);
+
+		moriwi *= Math.PI / 180;
+		moveBy( -Math.cos(moriwi) * 40, Math.sin(moriwi) * 40, ["solid"], true);
+
+		if (faust.onehit && !hitten) {
+			
+			// HP vom Schatten
+			if (HPP > 0) {
+				--HPP;
+			} else {
+				HXP.scene.remove(this);
+				--G.mlvl;
+			}
+			
+			// Moris Schattenpunkte
+			if (mori.SP == mori.SPmax && G.newborn <= 0) {
+				mori.GG = true;
+			}
+			else if (mori.SP != mori.SPmax) {
+				mori.SP += 2;
+			}
+			
+			// damit es pro faust nur einmal getriggert wird
+			faust.onehit = false;
+			hitten = true;
+		}
+		
+		verhalten(2);
+
+		return true;
+	}
+
+	private function moveCollideSolid(e:Entity):Bool {
+		//kehrtwende für wandern
+		if (vg == 0) {		
+			bes = -bes;
+		}
+		
+		return true;
+	}
 	
 	private function nonMoveCollision() {
 		
@@ -119,151 +195,30 @@ class Schatten extends Entity
 			}
 		}		
 	}
-	
-	override public function moveCollideX(e:Entity):Bool {
-		
+
+	private function moveCollide(e:Entity):Bool {
 		if (e.type == "solid") {
-			
-			//kehrtwende für wandern
-			if (vg == 0) {
-				
-				bes = -bes;
-			}
-			
-			return true;
+			return moveCollideSolid(e);
 		} 
 		else if (e.type == "interesting") {
-			
 			return true;
 		}
 		else if (e.type == "mori") {
-			
-			if (G.sitzt && !mori.genuggehoert) { return true; }
-			else if (G.sitzt && mori.genuggehoert) { verhalten(2); return true; }
-			else if (mori.steht) { 		//damit knockback auch getriggert wird obwohl moveCollide in der mori class nicht getriggert wurde 
-				
-				mori.anne = HXP.angle(e.x, e.y, this.x, this.y);
-				mori.anne = mori.anne * Math.PI / 180;
-				
-				if (mori.name != "lysop" && mori.ren != 1) {	
-					
-					mori.knock = 60;				
-				}
-				
-				verhalten(2);
-				return true;
-			}
-			else { verhalten(2); return true; }
+			return moveCollideMori(e);
 		}
 		else if (e.type == "faust") {
-			
-			var moriwi:Float = HXP.angle(this.x, this.y, mori.x, mori.y);
-			moriwi *= Math.PI / 180;
-			moveBy( -Math.cos(moriwi) * 40, Math.sin(moriwi) * 40, ["solid"], true);
-			
-			var faust:Faust = cast(HXP.scene.nearestToEntity("faust", this), Faust);	
-			if (faust.onehit && !hitten) {
-				
-				// HP vom Schatten
-				if (HPP > 0) {
-					
-					--HPP;
-				} else {
-					
-					HXP.scene.remove(this);
-					--G.mlvl;
-				}	
-				
-				// Moris Schattenpunkte
-				if (mori.SP == mori.SPmax && G.newborn <= 0) {
-					mori.GG = true;
-				}
-				else if (mori.SP != mori.SPmax) {
-					mori.SP += 2;
-				}
-				
-				// damit es pro faust nur einmal getriggert wird
-				faust.onehit = false;
-				hitten = true;
-			}
-			
-			verhalten(2);
-			return true;
+			return moveCollideFaust(e);
 		}
-		else return false; 
+		
+		return false; 
+	}
+	
+	override public function moveCollideX(e:Entity):Bool {
+		return moveCollide(e);
 	}
 	
 	override public function moveCollideY(e:Entity):Bool {
-		
-		if (e.type == "solid") {
-			
-			//kehrtwende für wandern
-			if (vg == 0) {
-				
-				bes = -bes;
-			}
-			
-			return true;
-		} 
-		else if (e.type == "interesting") {
-			
-			return true;
-		}
-		else if (e.type == "mori") {
-			
-			if (G.sitzt && !mori.genuggehoert) { return true; }
-			else if (G.sitzt && mori.genuggehoert) { verhalten(2); return true; }
-			else if (mori.steht) { 		//damit knockback auch getriggert wird obwohl moveCollide in der mori class nicht getriggert wurde 
-				
-				mori.anne = HXP.angle(e.x, e.y, this.x, this.y);
-				mori.anne = mori.anne * Math.PI / 180;
-				
-				if (mori.name != "lysop" && mori.ren != 1) {	
-					
-					mori.knock = 60;				
-				}
-				
-				verhalten(2);
-				return true;
-			}
-			else { verhalten(2); return true; }
-		}
-		else if (e.type == "faust") {
-			
-			var moriwi:Float = HXP.angle(this.x, this.y, mori.x, mori.y);
-			moriwi *= Math.PI / 180;
-			moveBy( -Math.cos(moriwi) * 40, Math.sin(moriwi) * 40, ["solid"], true);
-			
-			var faust:Faust = cast(HXP.scene.nearestToEntity("faust", this), Faust);	
-			if (faust.onehit && !hitten) {
-				
-				// HP vom Schatten
-				if (HPP > 0) {
-					
-					--HPP;
-				} else {
-					
-					HXP.scene.remove(this);
-					--G.mlvl;
-				}	
-				
-				// Moris Schattenpunkte
-				if (mori.SP == mori.SPmax && G.newborn <= 0) {
-					mori.GG = true;
-				}
-				else if (mori.SP != mori.SPmax) {
-					mori.SP += 2;
-				}
-				
-				// damit es pro faust nur einmal getriggert wird
-				faust.onehit = false;
-				hitten = true;
-			}
-			
-			verhalten(2);
-			return true;
-		}
-		else return false;
+		return moveCollide(e);
 	}
 	
 	private function welchesverhalten() {
