@@ -128,72 +128,31 @@ class Schatten extends Entity
 	}
 	
 	private function nonMoveCollision() {
-		
-		//--HPP hat in der moveCollide nicht funktioniert, jetzt gabs probleme wenn der schatten in der ecke hängt
+		if (collide("mori", x, y) == null) {
+			return;
+		}
+
+		if (mori.ren == 1) {
+			return;
+		}
 	
-	/*	// Original collision mit schlagen
-	 * if (collide("faust", x, y) != null) {
-			
-			var faust:Faust = cast(HXP.scene.nearestToEntity("faust", this), Faust);
-			
-			if (faust.onehit && !hitten) {
-				
-				// HP vom Schatten
-				if (HPP > 0) {
-					
-					--HPP;
-				} else {
-					
-					HXP.scene.remove(this);
-					--G.mlvl;
-				}	
-				
-				// Moris Schattenpunkte
-				if (mori.SP == mori.SPmax && G.newborn <= 0) {
-					mori.GG = true;
-				}
-				else if (mori.SP != mori.SPmax) {
-					mori.SP += 2;
-				}
-				
-				// damit es pro faust nur einmal getriggert wird
-				faust.onehit = false;
-				hitten = true;
-			}
+		// HP vom Schatten
+		if (HPP > 0) {
+			--HPP;
+		} else {
+			HXP.scene.remove(this);
+			--G.mlvl;
+		}	
+		
+		// Moris Schattenpunkte
+		if (mori.SP == mori.SPmax && G.newborn <= 0) {
+			mori.GG = true;
+		}
+		else if (mori.SP != mori.SPmax) {
+			mori.SP += 2;
 		}
 		
-		if (HXP.scene.typeCount("faust") == 0 && hitten) {
-			
-			hitten = false;
-		}
-	*/
-		
-		if (collide("mori", x, y) != null) {
-			
-			
-			if (mori.ren != 1) {
-				
-				// HP vom Schatten
-				if (HPP > 0) {
-					
-					--HPP;
-				} else {
-					
-					HXP.scene.remove(this);
-					--G.mlvl;
-				}	
-				
-				// Moris Schattenpunkte
-				if (mori.SP == mori.SPmax && G.newborn <= 0) {
-					mori.GG = true;
-				}
-				else if (mori.SP != mori.SPmax) {
-					mori.SP += 2;
-				}
-				
-				mori.knock = 60;
-			}
-		}		
+		mori.knock = 60;
 	}
 
 	private function moveCollide(e:Entity):Bool {
@@ -222,57 +181,50 @@ class Schatten extends Entity
 	}
 	
 	private function welchesverhalten() {
-		
-		if (mori != null) { 
-			
-			var akdis:Float = HXP.distance(mori.x, mori.y, this.x, this.y);
-			
-			/**	Damit die schatten wissen, was zu tun ist.
-			 * * * * Manchmal nach dem erzählen, verfolgen sie mori vernarrt. Got to be fixed! 
-			 * * * * FAILED: erster versuch: flüchten an erste stelle, anstatt wandern -> verfolgen!
-			 * * * * FAILED: zweiter versuch: mehr bools und reihenfolge geändert. erzählen höhere priorität.
-			 * * * * dritter versuch: 
-			 */
-			
-			// lysop fliegt davon
-			if (mori.name == "lysop" && G.schwebt) { verhalten(0);	}
-			
-			// -> erzählen
-			else if (akdis < 500 && G.sitzt && !mori.genuggehoert) { verhalten(1); }
-			
-			// -> flüchten nach erzählen
-			else if (akdis < 500 && G.sitzt && mori.genuggehoert) { verhalten(2); }	
-			
-			// flüchten
-			else if (akdis <= 300 && folgflucht && !G.sitzt) { verhalten(2); }	
-			
-			// flüchten -> wandern
-			else if (akdis > 300 && folgflucht) { verhalten(0); folgflucht = false; }
-			
-			// wandern -> verfolgen
-			else if (akdis <= 100 && !folgflucht && !G.sitzt) { verhalten(3); }	
-			
-			// - > wandern
-			else if (akdis >= 500) { verhalten(0); }	
-			
-			// rest
-			else { verhalten(0); }
-			
-			
-			
-			// nicht mehr erzählen
-			if (!G.sitzt) { scherzaehlt = false; } 											// weg?
-		} 
-		else {
-			
+		detectAndSetDirection();
+
+		if (mori == null) { 
 			verhalten(0); 
-		}	
+			return;
+		}
+			
+		var akdis:Float = HXP.distance(mori.x, mori.y, this.x, this.y);
 		
-		if (geschwindX > 0 && geschwindX > geschwindY && geschwindX > -geschwindY) { richtung = 2; }		// OST
-		if (geschwindX < 0 && geschwindX < geschwindY && geschwindX < -geschwindY) { richtung = 4; }		// WEST
-		if (geschwindY > 0 && geschwindY > geschwindX && geschwindY > -geschwindX) { richtung = 3; }		// SUD
-		if (geschwindY < 0 && geschwindY < geschwindX && geschwindY < -geschwindX) { richtung = 1; }		// NORD
+		/**	Damit die schatten wissen, was zu tun ist.
+		 * * * * Manchmal nach dem erzählen, verfolgen sie mori vernarrt. Got to be fixed! 
+		 * * * * FAILED: erster versuch: flüchten an erste stelle, anstatt wandern -> verfolgen!
+		 * * * * FAILED: zweiter versuch: mehr bools und reihenfolge geändert. erzählen höhere priorität.
+		 * * * * dritter versuch: 
+		 */
 		
+		// lysop fliegt davon
+		if (mori.name == "lysop" && G.schwebt) { verhalten(0);	}
+		
+		// -> erzählen
+		else if (akdis < 500 && G.sitzt && !mori.genuggehoert) { verhalten(1); }
+		
+		// -> flüchten nach erzählen
+		else if (akdis < 500 && G.sitzt && mori.genuggehoert) { verhalten(2); }	
+		
+		// flüchten
+		else if (akdis <= 300 && folgflucht && !G.sitzt) { verhalten(2); }	
+		
+		// flüchten -> wandern
+		else if (akdis > 300 && folgflucht) { verhalten(0); folgflucht = false; }
+		
+		// wandern -> verfolgen
+		else if (akdis <= 100 && !folgflucht && !G.sitzt) { verhalten(3); }	
+		
+		// - > wandern
+		else if (akdis >= 500) { verhalten(0); }	
+		
+		// rest
+		else { verhalten(0); }
+			
+			
+			
+		// nicht mehr erzählen
+		if (!G.sitzt) { scherzaehlt = false; } // weg?		
 		
 		/**
 		 * Ausstellungsfix für das penetrante Verfolgen
@@ -284,6 +236,13 @@ class Schatten extends Entity
 			
 			trace("ahoi");
 		}
+	}
+
+	private function detectAndSetDirection() {
+		if (geschwindX > 0 && geschwindX > geschwindY && geschwindX > -geschwindY) { richtung = 2; }		// OST
+		if (geschwindX < 0 && geschwindX < geschwindY && geschwindX < -geschwindY) { richtung = 4; }		// WEST
+		if (geschwindY > 0 && geschwindY > geschwindX && geschwindY > -geschwindX) { richtung = 3; }		// SUD
+		if (geschwindY < 0 && geschwindY < geschwindX && geschwindY < -geschwindX) { richtung = 1; }		// NORD
 	}
 	
 	/**
