@@ -145,6 +145,30 @@ class Groz extends Schatten
 	}
 	
 	private function spritesheet() {
+
+		/*var sprites = [
+			{
+				name: "stehen",
+				frameRate: 1,
+				loop: true,
+				n: [93, 94],
+				o: [ 31, 32],
+				s: [62, 63],
+				w: [0, 1]
+			}
+		]
+
+		for (var i = 0; sprites.length; i++) {
+			var dims = ['n', 'o', 's', 'w'];
+			var sprite = sprites[i];
+
+			for (var j = 0; j < dims.length) {
+				var dim = dims[j]);
+
+				grozn.add(sprite.name + dim.toUpperCase(), sprite[dim], sprite.frameRate, sprite.loop);
+			}
+		}*/
+
 		
 		//W
 		grozn.add("stehenW", [0, 1], 1, true);
