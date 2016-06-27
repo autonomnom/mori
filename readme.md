@@ -10,6 +10,8 @@
 
 
 
+![mori](https://pbs.twimg.com/media/ClkJylxWQAE7ThU.jpg:large)
+
 
 
 A game about a little child named Mori that is held in a box by its parents. 
