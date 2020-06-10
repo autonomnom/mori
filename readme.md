@@ -41,4 +41,4 @@ The scripts in this repository are written based on them.
 
 
 
-[@autonomnom](http://twitter.com/autonomnom)
+[@cleopatra](http://twitter.com/c7eopatra)
